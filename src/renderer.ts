@@ -30,6 +30,10 @@ type ElectronAPI = {
   readFileText: (filePath: string) => Promise<string>;
   listRecentFiles: () => Promise<RecentFile[]>;
   listTree: () => Promise<TreeNode[]>;
+  explainFile: (filePath: string, content: string) => Promise<void>;
+  onExplanationChunk: (callback: (chunk: string) => void) => void;
+  onExplanationDone: (callback: () => void) => void;
+  onExplanationError: (callback: (err: string) => void) => void;
 };
 
 declare global {
@@ -44,6 +48,8 @@ const recentFilesContainer = document.getElementById('recent-files') as HTMLDivE
 const treeContainer = document.getElementById('tree') as HTMLDivElement;
 const editorFilePath = document.getElementById('editor-file-path') as HTMLDivElement;
 const editorContent = document.getElementById('editor-content') as HTMLPreElement;
+const explanationContent = document.getElementById('explanation-content') as HTMLDivElement;
+const explanationLoader = document.getElementById('explanation-loader') as HTMLSpanElement;
 
 const extensionKeys = Object.keys(SETI_FILE_EXTENSION_ICON).sort((a, b) => b.length - a.length);
 const SETI_EXTENSION_FALLBACK_ICON: Record<string, string> = {
@@ -58,6 +64,8 @@ let currentTreeNodes: TreeNode[] = [];
 let currentRecentFiles: RecentFile[] = [];
 let currentRootPath: string | null = null;
 let refreshIntervalId: number | null = null;
+let activeExplainPath: string | null = null;
+let currentExplainId = 0;
 const expandedDirectoryPaths = new Set<string>();
 const relativeTimeFormatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
@@ -386,15 +394,45 @@ function shortRelative(
 }
 
 async function openFile(filePath: string): Promise<void> {
+  currentExplainId += 1;
+  const explainId = currentExplainId;
+
   editorFilePath.textContent = filePath;
   editorContent.textContent = 'Loading...';
+  explanationContent.textContent = '';
+  explanationContent.dataset.explainId = String(explainId);
+  explanationContent.classList.remove('explanation-error');
+  explanationLoader.classList.remove('hidden');
+  activeExplainPath = filePath;
   try {
     const fileText = await window.electronAPI.readFileText(filePath);
+    if (explainId !== currentExplainId) return;
     editorContent.textContent = fileText;
+    void window.electronAPI.explainFile(filePath, fileText);
   } catch (error) {
+    if (explainId !== currentExplainId) return;
     editorContent.textContent = `Cannot read file: ${String(error)}`;
+    explanationLoader.classList.add('hidden');
   }
 }
+
+// Set up explanation streaming listeners once
+window.electronAPI.onExplanationChunk((chunk) => {
+  if (explanationContent.dataset.explainId !== String(currentExplainId)) return;
+  explanationContent.textContent += chunk;
+});
+
+window.electronAPI.onExplanationDone(() => {
+  if (explanationContent.dataset.explainId !== String(currentExplainId)) return;
+  explanationLoader.classList.add('hidden');
+});
+
+window.electronAPI.onExplanationError((err) => {
+  if (explanationContent.dataset.explainId !== String(currentExplainId)) return;
+  explanationLoader.classList.add('hidden');
+  explanationContent.textContent = `Error: ${err}`;
+  explanationContent.classList.add('explanation-error');
+});
 
 async function refreshWorkspaceView(): Promise<void> {
   if (!currentRootPath) {

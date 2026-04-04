@@ -9,7 +9,8 @@
     "build:renderer": "tsc -p tsconfig.renderer.json",
     "copy:static": "mkdir -p dist/assets && cp src/index.html dist/index.html && cp src/styles.css dist/styles.css && cp src/assets/seti.woff dist/assets/seti.woff",
     "start": "npm run build && electron .",
-    "dev": "npm run build && electron ."
+    "dev": "npm run build && electron .",
+    "check": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit"
   },
   "repository": {
     "type": "git",
@@ -27,5 +28,8 @@
     "@types/node": "^25.5.0",
     "electron": "^41.0.4",
     "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.92"
   }
 }

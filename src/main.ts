@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { ask } from './llm';
 
 type TreeNode = {
   name: string;
@@ -175,6 +176,19 @@ ipcMain.handle('fs:listTree', async () => {
   }
 
   return buildTree(currentRootPath);
+});
+
+ipcMain.handle('claude:explainFile', async (event, filePath: string, fileContent: string) => {
+  try {
+    await ask(
+      `Explain me this file (${filePath}):\n\n${fileContent}`,
+      (chunk) => { event.sender.send('claude:chunk', chunk); },
+      { model: 'haiku', maxTurns: 1, allowedTools: [] }
+    );
+    event.sender.send('claude:done');
+  } catch (err) {
+    event.sender.send('claude:error', String(err));
+  }
 });
 
 app.whenReady().then(() => {
