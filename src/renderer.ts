@@ -28,10 +28,9 @@ type RecentFile = {
 
 type ElectronAPI = {
   openFolder: () => Promise<OpenFolderResult>;
-  readFileText: (filePath: string) => Promise<string>;
   listRecentFiles: () => Promise<RecentFile[]>;
   listTree: () => Promise<TreeNode[]>;
-  explainFile: (filePath: string, content: string, tabId: string) => Promise<void>;
+  explainFile: (filePath: string, tabId: string) => Promise<void>;
   onExplanationChunk: (callback: (tabId: string, chunk: string) => void) => void;
   onExplanationDone: (callback: (tabId: string) => void) => void;
   onExplanationError: (callback: (tabId: string, err: string) => void) => void;
@@ -480,19 +479,7 @@ async function openFile(filePath: string): Promise<void> {
   };
   tabs.push(tab);
   switchTab(tabId);
-
-  try {
-    const fileText = await window.electronAPI.readFileText(filePath);
-    if (!tabs.find((t) => t.id === tabId)) return;
-    void window.electronAPI.explainFile(filePath, fileText, tabId);
-  } catch (error) {
-    const t = tabs.find((t) => t.id === tabId);
-    if (!t) return;
-    t.status = 'error';
-    t.rawText = `Cannot read file: ${String(error)}`;
-    renderTabs();
-    if (activeTabId === tabId) renderActiveTab();
-  }
+  void window.electronAPI.explainFile(filePath, tabId);
 }
 
 window.electronAPI.onExplanationChunk((tabId, chunk) => {

@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import ignore, { type Ignore } from 'ignore';
-import { ask } from './llm';
+import { explainer } from './explainer/explainer';
 
 type TreeNode = {
   name: string;
@@ -120,12 +120,6 @@ async function collectRecentFiles(rootPath: string, limit: number): Promise<Rece
   return collected.slice(0, limit);
 }
 
-function isPathInsideRoot(candidatePath: string, rootPath: string): boolean {
-  const normalizedRoot = path.resolve(rootPath);
-  const normalizedCandidate = path.resolve(candidatePath);
-  const relative = path.relative(normalizedRoot, normalizedCandidate);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
-}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -163,22 +157,6 @@ ipcMain.handle('dialog:openFolder', async () => {
   };
 });
 
-ipcMain.handle('fs:readFileText', async (_event, filePath: string) => {
-  if (!currentRootPath) {
-    throw new Error('No folder opened yet');
-  }
-
-  if (!isPathInsideRoot(filePath, currentRootPath)) {
-    throw new Error('Requested file is outside opened folder');
-  }
-
-  const stats = await fs.stat(filePath);
-  if (!stats.isFile()) {
-    throw new Error('Requested path is not a file');
-  }
-
-  return fs.readFile(filePath, 'utf8');
-});
 
 ipcMain.handle('fs:listRecentFiles', async () => {
   if (!currentRootPath) {
@@ -196,16 +174,17 @@ ipcMain.handle('fs:listTree', async () => {
   return buildTree(currentRootPath);
 });
 
-ipcMain.handle('claude:explainFile', async (event, filePath: string, fileContent: string, tabId: string) => {
-  try {
-    await ask(
-      `Explain me this file briefly (${filePath}):\n\n${fileContent}`,
-      (chunk) => { event.sender.send('claude:chunk', tabId, chunk); },
-    );
-    event.sender.send('claude:done', tabId);
-  } catch (err) {
-    event.sender.send('claude:error', tabId, String(err));
+ipcMain.handle('claude:explainFile', async (event, filePath: string, tabId: string) => {
+  if (!currentRootPath) {
+    event.sender.send('claude:error', tabId, 'No folder opened yet');
+    return;
   }
+  await explainer(
+    filePath,
+    (chunk) => { event.sender.send('claude:chunk', tabId, chunk); },
+    () => { event.sender.send('claude:done', tabId); },
+    (err) => { event.sender.send('claude:error', tabId, err); },
+  );
 });
 
 app.whenReady().then(() => {

@@ -21,11 +21,10 @@ type RecentFile = {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openFolder: (): Promise<OpenFolderResult> => ipcRenderer.invoke('dialog:openFolder'),
-  readFileText: (filePath: string): Promise<string> => ipcRenderer.invoke('fs:readFileText', filePath),
   listRecentFiles: (): Promise<RecentFile[]> => ipcRenderer.invoke('fs:listRecentFiles'),
   listTree: (): Promise<TreeNode[]> => ipcRenderer.invoke('fs:listTree'),
-  explainFile: (filePath: string, content: string, tabId: string): Promise<void> =>
-    ipcRenderer.invoke('claude:explainFile', filePath, content, tabId),
+  explainFile: (filePath: string, tabId: string): Promise<void> =>
+    ipcRenderer.invoke('claude:explainFile', filePath, tabId),
   onExplanationChunk: (callback: (tabId: string, chunk: string) => void): void => {
     ipcRenderer.on('claude:chunk', (_event, tabId: string, chunk: string) => callback(tabId, chunk));
   },
