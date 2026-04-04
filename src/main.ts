@@ -174,13 +174,25 @@ ipcMain.handle('fs:listTree', async () => {
   return buildTree(currentRootPath);
 });
 
+function treeToString(nodes: TreeNode[], indent = ''): string {
+  return nodes.map((node) => {
+    if (node.type === 'directory') {
+      return `${indent}${node.name}/\n${treeToString(node.children ?? [], indent + '  ')}`;
+    }
+    return `${indent}${node.name}`;
+  }).join('\n');
+}
+
 ipcMain.handle('claude:explainFile', async (event, filePath: string, tabId: string) => {
   if (!currentRootPath) {
     event.sender.send('claude:error', tabId, 'No folder opened yet');
     return;
   }
+  const tree = await buildTree(currentRootPath);
+  const fileStructure = treeToString(tree);
   await explainer(
     filePath,
+    fileStructure,
     (chunk) => { event.sender.send('claude:chunk', tabId, chunk); },
     () => { event.sender.send('claude:done', tabId); },
     (err) => { event.sender.send('claude:error', tabId, err); },
