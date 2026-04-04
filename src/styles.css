@@ -60,31 +60,52 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 320px 1fr 380px;
+  grid-template-columns: var(--col-sidebar, 320px) 5px 1fr 5px var(--col-explanation, 380px);
   height: calc(100vh - 54px);
+  overflow: hidden;
+}
+
+.resizer {
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.resizer:hover,
+.resizer.dragging {
+  background: var(--muted);
+}
+
+.resizer-col {
+  cursor: col-resize;
+  width: 5px;
+}
+
+.resizer-row {
+  cursor: row-resize;
+  height: 5px;
+  width: 100%;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  border-right: 1px solid var(--border);
   padding: 10px;
   overflow: hidden;
 }
 
 .sidebar-panel {
   min-height: 0;
+  overflow: hidden;
 }
 
 .recent-panel {
-  height: 30%;
-  border-bottom: 1px solid var(--border);
+  flex: 0 0 var(--recent-panel-h, 140px);
   padding-bottom: 8px;
 }
 
 .tree-panel {
-  height: 70%;
+  flex: 1 1 0;
 }
 
 .sidebar h2 {
@@ -231,7 +252,6 @@ body {
 .explanation-pane {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--border);
   overflow: hidden;
 }
 

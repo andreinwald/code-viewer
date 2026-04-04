@@ -495,4 +495,88 @@ setInterval(() => {
   }
 }, 30_000);
 
+// --- Resizable panes ---
+
+const layout = document.querySelector('.layout') as HTMLElement;
+const sidebar = document.querySelector('.sidebar') as HTMLElement;
+
+function initColResizer(
+  resizerId: string,
+  cssVar: string,
+  getStartSize: () => number,
+  sign: 1 | -1
+): void {
+  const resizer = document.getElementById(resizerId)!;
+  resizer.addEventListener('mousedown', (e: MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startSize = getStartSize();
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    resizer.classList.add('dragging');
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = (ev.clientX - startX) * sign;
+      const newSize = Math.max(120, Math.min(startSize + delta, window.innerWidth - 240));
+      layout.style.setProperty(cssVar, `${newSize}px`);
+    };
+
+    const onUp = () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      resizer.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+function initRowResizer(resizerId: string): void {
+  const resizer = document.getElementById(resizerId)!;
+  resizer.addEventListener('mousedown', (e: MouseEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = parseInt(getComputedStyle(sidebar).getPropertyValue('--recent-panel-h') || '140', 10);
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+    resizer.classList.add('dragging');
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = ev.clientY - startY;
+      const newH = Math.max(60, Math.min(startH + delta, sidebar.clientHeight - 80));
+      sidebar.style.setProperty('--recent-panel-h', `${newH}px`);
+    };
+
+    const onUp = () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      resizer.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+initColResizer(
+  'resizer-sidebar',
+  '--col-sidebar',
+  () => parseInt(getComputedStyle(layout).gridTemplateColumns.split(' ')[0], 10),
+  1
+);
+
+initColResizer(
+  'resizer-explanation',
+  '--col-explanation',
+  () => parseInt(getComputedStyle(layout).gridTemplateColumns.split(' ')[4], 10),
+  -1
+);
+
+initRowResizer('resizer-panels');
+
 export {};
