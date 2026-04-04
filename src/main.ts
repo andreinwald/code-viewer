@@ -181,7 +181,7 @@ ipcMain.handle('fs:listTree', async () => {
 ipcMain.handle('claude:explainFile', async (event, filePath: string, fileContent: string) => {
   try {
     await ask(
-      `Explain me this file (${filePath}):\n\n${fileContent}`,
+      `Explain me this file briefly (${filePath}):\n\n${fileContent}`,
       (chunk) => { event.sender.send('claude:chunk', chunk); },
     );
     event.sender.send('claude:done');

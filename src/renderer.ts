@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import {
   SETI_DEFAULT_FILE_ICON,
   SETI_FILE_EXTENSION_ICON,
@@ -66,6 +67,7 @@ let currentRootPath: string | null = null;
 let refreshIntervalId: number | null = null;
 let activeExplainPath: string | null = null;
 let currentExplainId = 0;
+let explanationRawText = '';
 const expandedDirectoryPaths = new Set<string>();
 const relativeTimeFormatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
@@ -399,7 +401,8 @@ async function openFile(filePath: string): Promise<void> {
 
   editorFilePath.textContent = filePath;
   editorContent.textContent = 'Loading...';
-  explanationContent.textContent = '';
+  explanationContent.innerHTML = '';
+  explanationRawText = '';
   explanationContent.dataset.explainId = String(explainId);
   explanationContent.classList.remove('explanation-error');
   explanationLoader.classList.remove('hidden');
@@ -419,7 +422,8 @@ async function openFile(filePath: string): Promise<void> {
 // Set up explanation streaming listeners once
 window.electronAPI.onExplanationChunk((chunk) => {
   if (explanationContent.dataset.explainId !== String(currentExplainId)) return;
-  explanationContent.textContent += chunk;
+  explanationRawText += chunk;
+  explanationContent.innerHTML = marked.parse(explanationRawText) as string;
 });
 
 window.electronAPI.onExplanationDone(() => {
@@ -430,7 +434,7 @@ window.electronAPI.onExplanationDone(() => {
 window.electronAPI.onExplanationError((err) => {
   if (explanationContent.dataset.explainId !== String(currentExplainId)) return;
   explanationLoader.classList.add('hidden');
-  explanationContent.textContent = `Error: ${err}`;
+  explanationContent.innerHTML = `<p>Error: ${err}</p>`;
   explanationContent.classList.add('explanation-error');
 });
 
