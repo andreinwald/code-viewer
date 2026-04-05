@@ -1,6 +1,6 @@
 import type { RecentFile } from '@bridge';
-import { getFileIconGlyph, getFileColor } from '../backend/fileicons/fileIcons';
-import { formatAge } from '../backend/utils/timeFormat';
+import { getFileIconGlyph, getFileColor } from './fileicons/fileIcons';
+import { formatAge } from './utils/timeFormat';
 
 type Props = {
   files: RecentFile[];
