@@ -1,8 +1,8 @@
 You need to explain me file with code, that will be listed in the end.
 
-For context, file structure:
+For context, here is an overview of the repository this file belongs to:
 ---------------
-{{fileStructure}}
+{{repoExplanation}}
 ---------------
 
 Summary of a few other files in repo:

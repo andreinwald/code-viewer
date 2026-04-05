@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { ask } from '../llm/llm';
+import { getRepoExplanation } from './repoExplainer';
 import promptTemplate from './prompt.md';
 
 type CacheEntry = {
@@ -23,7 +24,6 @@ function formatOtherFiles(currentFilePath: string): string {
 
 export async function explainer(
   filePath: string,
-  fileStructure: string,
   onChunk: (chunk: string) => void,
   onDone: () => void,
   onError: (err: string) => void
@@ -44,9 +44,11 @@ export async function explainer(
       return;
     }
 
+    const repoExplanation = getRepoExplanation() ?? '(not available yet)';
+
     const prompt = promptTemplate
       .replace('{{filePath}}', filePath)
-      .replace('{{fileStructure}}', fileStructure)
+      .replace('{{repoExplanation}}', repoExplanation)
       .replace('{{otherFiles}}', formatOtherFiles(filePath))
       .replace('{{fileContent}}', fileContent);
 

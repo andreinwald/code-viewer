@@ -50,12 +50,9 @@ export function registerHandlers({ getWindow }: {
   });
 
   ipcMain.handle(CHANNELS.EXPLAIN_FILE, async (event, filePath: string, tabId: string) => {
-    const rootPath = currentRootPath;
-    if (!rootPath) { event.sender.send(CHANNELS.EXPLAIN_ERROR, tabId, 'No folder opened yet'); return; }
-    const fileStructure = treeToString(await buildTree(rootPath));
+    if (!currentRootPath) { event.sender.send(CHANNELS.EXPLAIN_ERROR, tabId, 'No folder opened yet'); return; }
     await explainer(
       filePath,
-      fileStructure,
       (chunk) => { event.sender.send(CHANNELS.EXPLAIN_CHUNK, tabId, chunk); },
       () => { event.sender.send(CHANNELS.EXPLAIN_DONE, tabId); },
       (err) => { event.sender.send(CHANNELS.EXPLAIN_ERROR, tabId, err); },
