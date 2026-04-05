@@ -10,7 +10,7 @@
     "copy:static": "mkdir -p dist/electron/assets && cp src/electron/index.html dist/electron/index.html && cp src/electron/styles.css dist/electron/styles.css && cp src/electron/assets/seti.woff dist/electron/assets/seti.woff",
     "start": "npm run build && electron .",
     "dev": "npm run build && electron .",
-    "check": "tsc -p tsconfig.main.json --noEmit"
+    "checktypes": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
