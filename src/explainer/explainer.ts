@@ -1,5 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { createHash } from 'node:crypto';
 import { ask } from '../llm';
 
 let promptTemplate: string | null = null;
@@ -9,6 +10,24 @@ async function getPromptTemplate(): Promise<string> {
     promptTemplate = await fs.readFile(path.join(__dirname, 'prompt.md'), 'utf8');
   }
   return promptTemplate;
+}
+
+type CacheEntry = {
+  hash: string;
+  fileContent: string;
+  summary: string;
+};
+
+const cache = new Map<string, CacheEntry>();
+
+function hashContent(content: string): string {
+  return createHash('md5').update(content).digest('hex');
+}
+
+function formatOtherFiles(currentFilePath: string): string {
+  const entries = [...cache.entries()].filter(([p]) => p !== currentFilePath);
+  if (entries.length === 0) return '(none yet)';
+  return entries.map(([p, e]) => `### ${p}\n${e.fileContent}`).join('\n\n');
 }
 
 export async function explainer(
@@ -25,14 +44,29 @@ export async function explainer(
     }
 
     const fileContent = await fs.readFile(filePath, 'utf8');
-    const template = await getPromptTemplate();
+    const hash = hashContent(fileContent);
 
+    const cached = cache.get(filePath);
+    if (cached && cached.hash === hash) {
+      onChunk(cached.summary);
+      onDone();
+      return;
+    }
+
+    const template = await getPromptTemplate();
     const prompt = template
       .replace('{{filePath}}', filePath)
       .replace('{{fileStructure}}', fileStructure)
+      .replace('{{otherFiles}}', formatOtherFiles(filePath))
       .replace('{{fileContent}}', fileContent);
 
-    await ask(prompt, onChunk);
+    let summary = '';
+    await ask(prompt, (chunk) => {
+      summary += chunk;
+      onChunk(chunk);
+    });
+
+    cache.set(filePath, { hash, fileContent, summary });
     onDone();
   } catch (err) {
     onError(String(err));

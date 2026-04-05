@@ -6,6 +6,12 @@ For context, file structure:
 {{fileStructure}}
 ---------------
 
+Summary of a few other files in repo:
+---------------
+{{otherFiles}}
+---------------
+
+
 File to explain: {{filePath}}
 Its content:
 
