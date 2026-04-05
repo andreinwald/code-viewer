@@ -1,36 +1,30 @@
-import { query } from "@anthropic-ai/claude-agent-sdk";
-import type { Options } from "@anthropic-ai/claude-agent-sdk";
-
+import type { Options } from '@anthropic-ai/claude-agent-sdk';
 
 export async function ask(
-    message: string,
-    onChunk?: (chunk: string) => void,
+  message: string,
+  onChunk?: (chunk: string) => void,
 ): Promise<string> {
-    const options: Options = {
-        model: "sonnet",
-        allowedTools: [],
-        includePartialMessages: true,
-    };
+  const { query } = await import('@anthropic-ai/claude-agent-sdk');
 
-    const stream = query({ prompt: message, options });
+  const options: Options = {
+    model: 'sonnet',
+    allowedTools: [],
+    includePartialMessages: true,
+  };
 
-    let fullResponse = "";
+  const stream = query({ prompt: message, options });
+  let fullResponse = '';
 
-    for await (const msg of stream) {
-        if (msg.type === "stream_event") {
-            const event = msg.event;
-            if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-                const textChunk = event.delta.text;
-                fullResponse += textChunk;
-                if (onChunk) {
-                    onChunk(textChunk);
-                }
-            }
-        }
-        if (msg.type === "result") {
-            break;
-        }
+  for await (const msg of stream) {
+    if (msg.type === 'stream_event') {
+      const event = msg.event;
+      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+        fullResponse += event.delta.text;
+        onChunk?.(event.delta.text);
+      }
     }
+    if (msg.type === 'result') break;
+  }
 
-    return fullResponse.trim();
+  return fullResponse.trim();
 }

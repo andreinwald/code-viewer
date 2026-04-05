@@ -1,16 +1,7 @@
 import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import { ask } from '../llm/llm';
-
-let promptTemplate: string | null = null;
-
-async function getPromptTemplate(): Promise<string> {
-  if (!promptTemplate) {
-    promptTemplate = await fs.readFile(path.join(__dirname, 'prompt.md'), 'utf8');
-  }
-  return promptTemplate;
-}
+import promptTemplate from './prompt.md';
 
 type CacheEntry = {
   hash: string;
@@ -53,8 +44,7 @@ export async function explainer(
       return;
     }
 
-    const template = await getPromptTemplate();
-    const prompt = template
+    const prompt = promptTemplate
       .replace('{{filePath}}', filePath)
       .replace('{{fileStructure}}', fileStructure)
       .replace('{{otherFiles}}', formatOtherFiles(filePath))
