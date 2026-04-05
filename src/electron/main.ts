@@ -18,7 +18,12 @@ function createWindow(): void {
       nodeIntegration: false
     }
   });
-  void mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  const devServerUrl = process.env['VITE_DEV_SERVER_URL'];
+  if (devServerUrl) {
+    void mainWindow.loadURL(devServerUrl);
+  } else {
+    void mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  }
 }
 
 ipcMain.handle('dialog:openFolder', async () => {

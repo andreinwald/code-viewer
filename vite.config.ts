@@ -19,6 +19,9 @@ export default defineConfig({
     electron({
       main: {
         entry: path.resolve(__dirname, 'src/electron/main.ts'),
+        onstart({ startup }) {
+          startup();
+        },
         vite: {
           plugins: [mdTextPlugin()],
           build: {

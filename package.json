@@ -4,8 +4,7 @@
   "main": "dist/electron/main.js",
   "scripts": {
     "build": "vite build",
-    "start": "npm run build && electron .",
-    "dev": "npm run build && electron .",
+    "start": "vite",
     "checktypes": "tsc --noEmit"
   },
   "repository": {
