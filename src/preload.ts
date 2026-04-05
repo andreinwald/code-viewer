@@ -21,6 +21,7 @@ type RecentFile = {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openFolder: (): Promise<OpenFolderResult> => ipcRenderer.invoke('dialog:openFolder'),
+  fileExists: (filePath: string): Promise<boolean> => ipcRenderer.invoke('fs:fileExists', filePath),
   listRecentFiles: (): Promise<RecentFile[]> => ipcRenderer.invoke('fs:listRecentFiles'),
   listTree: (): Promise<TreeNode[]> => ipcRenderer.invoke('fs:listTree'),
   explainFile: (filePath: string, tabId: string): Promise<void> =>

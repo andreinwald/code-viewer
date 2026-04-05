@@ -28,6 +28,7 @@ type RecentFile = {
 
 type ElectronAPI = {
   openFolder: () => Promise<OpenFolderResult>;
+  fileExists: (filePath: string) => Promise<boolean>;
   listRecentFiles: () => Promise<RecentFile[]>;
   listTree: () => Promise<TreeNode[]>;
   explainFile: (filePath: string, tabId: string) => Promise<void>;
@@ -482,6 +483,18 @@ async function openFile(filePath: string): Promise<void> {
   void window.electronAPI.explainFile(filePath, tabId);
 }
 
+explanationContent.addEventListener('click', (e) => {
+  const anchor = (e.target as HTMLElement).closest('a');
+  if (!anchor || !currentRootPath) return;
+  e.preventDefault();
+  const href = anchor.getAttribute('href');
+  if (!href || href.startsWith('http://') || href.startsWith('https://')) return;
+  const fullPath = `${currentRootPath}/${href}`.replace(/\/+/g, '/');
+  void window.electronAPI.fileExists(fullPath).then((exists) => {
+    if (exists) void openFile(fullPath);
+  });
+});
+
 window.electronAPI.onExplanationChunk((tabId, chunk) => {
   const tab = tabs.find((t) => t.id === tabId);
   if (!tab) return;
@@ -544,8 +557,6 @@ openFolderButton.addEventListener('click', async () => {
   rootPathElement.textContent = result.rootPath;
   await refreshWorkspaceView();
   startAutoRefresh();
-  editorFilePath.textContent = 'Select a file from the tree';
-  editorContent.textContent = '';
 });
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {

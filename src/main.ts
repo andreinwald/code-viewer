@@ -158,6 +158,15 @@ ipcMain.handle('dialog:openFolder', async () => {
 });
 
 
+ipcMain.handle('fs:fileExists', async (_event, filePath: string) => {
+  try {
+    const stats = await fs.stat(filePath);
+    return stats.isFile();
+  } catch {
+    return false;
+  }
+});
+
 ipcMain.handle('fs:listRecentFiles', async () => {
   if (!currentRootPath) {
     throw new Error('No folder opened yet');
