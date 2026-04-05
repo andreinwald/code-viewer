@@ -151,16 +151,32 @@ export default function App() {
     void ElectronAPI.fileExists(fullPath).then(exists => { if (exists) openFile(fullPath); });
   }
 
+  function openRepoTab(repoName: string): string {
+    const tabId = String(nextTabId++);
+    setTabs(prev => [...prev, {
+      id: tabId,
+      filePath: '',
+      fileName: repoName,
+      rawText: '',
+      status: 'loading',
+    }]);
+    setActiveTabId(tabId);
+    return tabId;
+  }
+
   async function handleOpenFolder(): Promise<void> {
     const result = await ElectronAPI.openFolder();
     if (!result) return;
     setRootPath(result.rootPath);
+    const repoName = result.rootPath.split('/').pop() ?? result.rootPath;
+    const tabId = openRepoTab(repoName);
     const [tree, recent] = await Promise.all([
       ElectronAPI.listTree(),
       ElectronAPI.listRecentFiles(),
     ]);
     setTreeNodes(tree);
     setRecentFiles(recent);
+    void ElectronAPI.explainRepo(tabId);
   }
 
   return (

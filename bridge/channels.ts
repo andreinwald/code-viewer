@@ -3,6 +3,7 @@ export const CHANNELS = {
   FILE_EXISTS: 'fs:fileExists',
   LIST_RECENT_FILES: 'fs:listRecentFiles',
   LIST_TREE: 'fs:listTree',
+  EXPLAIN_REPO: 'llm:explainRepo',
   EXPLAIN_FILE: 'llm:explainFile',
   EXPLAIN_CHUNK: 'llm:chunk',
   EXPLAIN_DONE: 'llm:done',

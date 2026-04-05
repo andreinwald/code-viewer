@@ -3,6 +3,7 @@ import * as fs from 'node:fs/promises';
 import { buildTree, treeToString } from './filetree/tree';
 import { collectRecentFiles } from './filetree/recentFiles';
 import { explainer } from './explainer/explainer';
+import { repoExplainer } from './explainer/repoExplainer';
 import { CHANNELS } from '../bridge/channels';
 
 let currentRootPath: string | null = null;
@@ -34,6 +35,18 @@ export function registerHandlers({ getWindow }: {
     const rootPath = currentRootPath;
     if (!rootPath) throw new Error('No folder opened yet');
     return buildTree(rootPath);
+  });
+
+  ipcMain.handle(CHANNELS.EXPLAIN_REPO, async (event, tabId: string) => {
+    const rootPath = currentRootPath;
+    if (!rootPath) { event.sender.send(CHANNELS.EXPLAIN_ERROR, tabId, 'No folder opened yet'); return; }
+    const fileStructure = treeToString(await buildTree(rootPath));
+    await repoExplainer(
+      fileStructure,
+      (chunk) => { event.sender.send(CHANNELS.EXPLAIN_CHUNK, tabId, chunk); },
+      () => { event.sender.send(CHANNELS.EXPLAIN_DONE, tabId); },
+      (err) => { event.sender.send(CHANNELS.EXPLAIN_ERROR, tabId, err); },
+    );
   });
 
   ipcMain.handle(CHANNELS.EXPLAIN_FILE, async (event, filePath: string, tabId: string) => {
