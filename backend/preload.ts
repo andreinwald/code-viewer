@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { TreeNode } from '../filetree/tree';
-import type { RecentFile } from '../filetree/recentFiles';
+import type { TreeNode } from './filetree/tree';
+import type { RecentFile } from './filetree/recentFiles';
 
 export type OpenFolderResult = {
   rootPath: string;

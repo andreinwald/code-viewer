@@ -1,5 +1,6 @@
 import { defineConfig, Plugin } from 'vite';
 import electron from 'vite-plugin-electron/simple';
+import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 function mdTextPlugin(): Plugin {
@@ -14,11 +15,12 @@ function mdTextPlugin(): Plugin {
 }
 
 export default defineConfig({
-  root: 'src/electron',
+  root: 'frontend',
   plugins: [
+    react(),
     electron({
       main: {
-        entry: path.resolve(__dirname, 'src/electron/main.ts'),
+        entry: path.resolve(__dirname, 'backend/main.ts'),
         onstart({ startup }) {
           startup();
         },
@@ -34,7 +36,7 @@ export default defineConfig({
         },
       },
       preload: {
-        input: path.resolve(__dirname, 'src/electron/preload.ts'),
+        input: path.resolve(__dirname, 'backend/preload.ts'),
         vite: {
           build: {
             outDir: path.resolve(__dirname, 'dist/electron'),

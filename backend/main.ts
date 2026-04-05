@@ -1,9 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { buildTree, treeToString } from '../filetree/tree';
-import { collectRecentFiles } from '../filetree/recentFiles';
-import { explainer } from '../explainer/explainer';
+import { buildTree, treeToString } from './filetree/tree';
+import { collectRecentFiles } from './filetree/recentFiles';
+import { explainer } from './explainer/explainer';
 
 let mainWindow: BrowserWindow | null = null;
 let currentRootPath: string | null = null;
