@@ -8,8 +8,16 @@
     "checktypes": "tsc --noEmit"
   },
   "keywords": [],
-  "author": "",
+  "author": "Andrii Reinvald",
   "license": "MIT",
+  "dependencies": {
+    "@agentclientprotocol/claude-agent-acp": "^0.25.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "ignore": "^7.0.5",
+    "marked": "^17.0.5",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
   "devDependencies": {
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
@@ -18,13 +26,5 @@
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
     "vite-plugin-electron": "^0.29.1"
-  },
-  "dependencies": {
-    "@agentclientprotocol/claude-agent-acp": "^0.25.0",
-    "@vitejs/plugin-react": "^6.0.1",
-    "ignore": "^7.0.5",
-    "marked": "^17.0.5",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
   }
 }
