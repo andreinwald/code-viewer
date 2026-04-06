@@ -7,18 +7,9 @@
     "start": "vite",
     "checktypes": "tsc --noEmit"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/andreinwald/code-viewer.git"
-  },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/andreinwald/code-viewer/issues"
-  },
-  "homepage": "https://github.com/andreinwald/code-viewer#readme",
-  "description": "",
   "devDependencies": {
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
