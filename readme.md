@@ -1,5 +1,5 @@
 # Next-Gen AI IDE
-Read how code works, not how it is written.
+Read the logic, not the code.
 
 <img height="500" src="screenshot.png" alt="Screenshot"/>
 
