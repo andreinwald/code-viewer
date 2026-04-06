@@ -1,4 +1,4 @@
-# Next-Gen AI IDE
+# Logic IDE based on LLM
 Read the logic, not the code.
 - Working with programming language you dont know
 - Checking that the code does what it's supposed to
