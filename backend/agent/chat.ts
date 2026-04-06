@@ -8,16 +8,38 @@ export type ChatEvent =
   | { type: 'tool_call'; toolCallId: string; title: string; kind?: string; status: string }
   | { type: 'tool_call_update'; toolCallId: string; title?: string; status?: string; kind?: string };
 
+export type ModelInfo = { modelId: string; name: string };
+export type ModelState = { availableModels: ModelInfo[]; currentModelId: string };
+
 let chatSessionId: string | null = null;
 let isRunning = false;
+let modelState: ModelState | null = null;
 
 async function getOrCreateSession(): Promise<string> {
   if (!chatSessionId) {
     const conn = await getAcpConnection();
-    const { sessionId } = await conn.newSession({ cwd: process.cwd(), mcpServers: [] });
-    chatSessionId = sessionId;
+    const result = await conn.newSession({ cwd: process.cwd(), mcpServers: [] });
+    chatSessionId = result.sessionId;
+    if (result.models) {
+      modelState = {
+        availableModels: result.models.availableModels.map(m => ({ modelId: m.modelId, name: m.name })),
+        currentModelId: result.models.currentModelId,
+      };
+    }
   }
   return chatSessionId;
+}
+
+export async function chatGetModels(): Promise<ModelState | null> {
+  await getOrCreateSession();
+  return modelState;
+}
+
+export async function chatSetModel(modelId: string): Promise<void> {
+  const sessionId = await getOrCreateSession();
+  const conn = await getAcpConnection();
+  await conn.unstable_setSessionModel({ sessionId, modelId });
+  if (modelState) modelState = { ...modelState, currentModelId: modelId };
 }
 
 export async function chatSend(

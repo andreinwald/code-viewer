@@ -13,4 +13,6 @@ export const CHANNELS = {
   CHAT_EVENT: 'chat:event',
   CHAT_DONE: 'chat:done',
   CHAT_ERROR: 'chat:error',
+  CHAT_GET_MODELS: 'chat:getModels',
+  CHAT_SET_MODEL: 'chat:setModel',
 } as const;

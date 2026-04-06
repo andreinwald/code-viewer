@@ -26,6 +26,9 @@ export type ChatEvent =
   | { type: 'tool_call'; toolCallId: string; title: string; kind?: string; status: string }
   | { type: 'tool_call_update'; toolCallId: string; title?: string; status?: string; kind?: string };
 
+export type ModelInfo = { modelId: string; name: string };
+export type ModelState = { availableModels: ModelInfo[]; currentModelId: string };
+
 export type ElectronAPI = {
   openFolder: () => Promise<OpenFolderResult>;
   fileExists: (filePath: string) => Promise<boolean>;
@@ -39,6 +42,8 @@ export type ElectronAPI = {
   onMenuOpenFolder: (callback: () => void) => void;
   chatSend: (message: string) => Promise<void>;
   chatStop: () => Promise<void>;
+  chatGetModels: () => Promise<ModelState | null>;
+  chatSetModel: (modelId: string) => Promise<void>;
   onChatEvent: (callback: (event: ChatEvent) => void) => void;
   onChatDone: (callback: () => void) => void;
   onChatError: (callback: (err: string) => void) => void;
@@ -67,6 +72,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   chatSend: (message: string): Promise<void> => ipcRenderer.invoke(CHANNELS.CHAT_SEND, message),
   chatStop: (): Promise<void> => ipcRenderer.invoke(CHANNELS.CHAT_STOP),
+  chatGetModels: (): Promise<ModelState | null> => ipcRenderer.invoke(CHANNELS.CHAT_GET_MODELS),
+  chatSetModel: (modelId: string): Promise<void> => ipcRenderer.invoke(CHANNELS.CHAT_SET_MODEL, modelId),
   onChatEvent: (callback: (event: ChatEvent) => void): void => {
     ipcRenderer.on(CHANNELS.CHAT_EVENT, (_event, chatEvent: ChatEvent) => callback(chatEvent));
   },

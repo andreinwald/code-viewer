@@ -4,7 +4,7 @@ import { buildTree, treeToString } from './filetree/tree';
 import { collectRecentFiles } from './filetree/recentFiles';
 import { fileExplainer } from './explainer/fileExplainer/fileExplainer';
 import { repoExplainer } from './explainer/repoExplainer/repoExplainer';
-import { chatSend, chatStop } from './agent/chat';
+import { chatSend, chatStop, chatGetModels, chatSetModel } from './agent/chat';
 import { CHANNELS } from '../bridge/channels';
 
 let currentRootPath: string | null = null;
@@ -72,5 +72,13 @@ export function registerHandlers({ getWindow }: {
 
   ipcMain.handle(CHANNELS.CHAT_STOP, async () => {
     await chatStop();
+  });
+
+  ipcMain.handle(CHANNELS.CHAT_GET_MODELS, async () => {
+    return chatGetModels();
+  });
+
+  ipcMain.handle(CHANNELS.CHAT_SET_MODEL, async (_event, modelId: string) => {
+    await chatSetModel(modelId);
   });
 }

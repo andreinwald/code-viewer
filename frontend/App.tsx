@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { TreeNode, RecentFile } from '@bridge';
+import type { TreeNode, RecentFile, ModelInfo } from '@bridge';
 import { Tabs } from './Tabs';
 import type { Tab } from './Tabs';
 import { FileTree } from './FileTree';
@@ -21,9 +21,31 @@ export default function App() {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatRunning, setChatRunning] = useState(false);
+  const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
+  const [currentModelId, setCurrentModelId] = useState<string | undefined>();
 
   const layoutRef = useRef<HTMLElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
+  const pendingRepoTabId = useRef<string | null>(null);
+
+  // Load models on mount
+  useEffect(() => {
+    void ElectronAPI.chatGetModels().then(state => {
+      if (state) {
+        setAvailableModels(state.availableModels);
+        setCurrentModelId(state.currentModelId);
+      }
+    });
+  }, []);
+
+  // Trigger explainRepo once a model is selected
+  useEffect(() => {
+    if (currentModelId && pendingRepoTabId.current) {
+      const tabId = pendingRepoTabId.current;
+      pendingRepoTabId.current = null;
+      void ElectronAPI.explainRepo(tabId);
+    }
+  }, [currentModelId]);
 
   // Menu: Open Folder
   useEffect(() => {
@@ -214,6 +236,11 @@ export default function App() {
     void ElectronAPI.chatSend(message);
   }
 
+  function handleModelChange(modelId: string): void {
+    setCurrentModelId(modelId);
+    void ElectronAPI.chatSetModel(modelId);
+  }
+
   function handleChatStop(): void {
     void ElectronAPI.chatStop();
     setChatRunning(false);
@@ -232,7 +259,11 @@ export default function App() {
     ]);
     setTreeNodes(tree);
     setRecentFiles(recent);
-    void ElectronAPI.explainRepo(tabId);
+    if (currentModelId) {
+      void ElectronAPI.explainRepo(tabId);
+    } else {
+      pendingRepoTabId.current = tabId;
+    }
   }
 
   return (
@@ -267,6 +298,9 @@ export default function App() {
           isRunning={chatRunning}
           onSend={handleChatSend}
           onStop={handleChatStop}
+          availableModels={availableModels}
+          currentModelId={currentModelId}
+          onModelChange={handleModelChange}
         />
     </main>
   );

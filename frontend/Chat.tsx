@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { marked } from 'marked';
-import type { ChatEvent } from '@bridge';
+import type { ChatEvent, ModelInfo } from '@bridge';
 
 type TextBlock = { type: 'text'; messageId: string; text: string };
 type ThoughtBlock = { type: 'thought'; messageId: string; text: string };
@@ -19,6 +19,9 @@ type Props = {
   isRunning: boolean;
   onSend: (message: string) => void;
   onStop: () => void;
+  availableModels?: ModelInfo[];
+  currentModelId?: string;
+  onModelChange?: (modelId: string) => void;
 };
 
 const TOOL_KIND_ICONS: Record<string, string> = {
@@ -144,7 +147,7 @@ export function applyEvent(messages: ChatMessage[], event: ChatEvent): ChatMessa
   return messages;
 }
 
-export function Chat({ messages, isRunning, onSend, onStop }: Props) {
+export function Chat({ messages, isRunning, onSend, onStop, availableModels, currentModelId, onModelChange }: Props) {
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -170,7 +173,21 @@ export function Chat({ messages, isRunning, onSend, onStop }: Props) {
 
   return (
     <div className="chat-panel">
-      <div className="chat-header">Agent Chat</div>
+      <div className="chat-header">
+        <span>Agent Chat</span>
+        {availableModels && availableModels.length > 0 && (
+          <select
+            className="chat-model-select"
+            value={currentModelId}
+            onChange={e => onModelChange?.(e.target.value)}
+            disabled={isRunning}
+          >
+            {availableModels.map(m => (
+              <option key={m.modelId} value={m.modelId}>{m.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
       <div className="chat-messages" ref={scrollRef}>
         {messages.length === 0 && (
           <div className="chat-empty">Send a message to start chatting with the agent.</div>

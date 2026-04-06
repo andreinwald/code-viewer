@@ -407,6 +407,28 @@ body {
   color: var(--muted);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chat-model-select {
+  font-size: 11px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: normal;
+}
+
+.chat-model-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .chat-messages {
